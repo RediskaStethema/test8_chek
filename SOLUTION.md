@@ -1,3 +1,9 @@
+
+The current version of react-scripts uses deprecated onBeforeSetupMiddleware and onAfterSetupMiddleware options in webpack-dev-server, which results in deprecation warnings.
+These warnings do not affect the functionality of the application and do not interfere with development.
+Forced ejection or configuration customization increases the complexity of the project and requires additional support efforts.
+For long-term improvements, you can consider migrating to modern build tools (e.g. Vite), which do not have such warnings.
+
 Backend
 
 Creating a full app.use('/favicon.ico', ...) 
