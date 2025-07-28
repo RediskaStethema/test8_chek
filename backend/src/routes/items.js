@@ -1,66 +1,93 @@
 const express = require('express');
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
+const {NotFoundError, ValidationError} = require('../utils/constants');
+const {readData, writeData} = require('../utils/stats');
+
 const router = express.Router();
-const DATA_PATH = path.join(__dirname, '../../../data/items.json');
 
-// Utility to read data (intentionally sync to highlight blocking issue)
-function readData() {
-  const raw = fs.readFileSync(DATA_PATH);
-  return JSON.parse(raw);
-}
+router.get('/', async (req, res, next) => {
+    try {
+        const data = await readData();
+        const { limit, offset, q } = req.query;
 
-// GET /api/items
-router.get('/', (req, res, next) => {
-  try {
-    const data = readData();
-    const { limit, q } = req.query;
-    let results = data;
+        let filtered = data;
 
-    if (q) {
-      // Simple substring search (sub‑optimal)
-      results = results.filter(item => item.name.toLowerCase().includes(q.toLowerCase()));
+        if (q) {
+            filtered = filtered.filter(item =>
+                item.name.toLowerCase().includes(q.toLowerCase())
+            );
+        }
+
+        const parsedLimit = limit !== undefined ? parseInt(limit, 10) : undefined;
+        const parsedOffset = offset !== undefined ? parseInt(offset, 10) : 0;
+
+        if ((limit !== undefined && (isNaN(parsedLimit) || parsedLimit < 0)) ||
+            (offset !== undefined && (isNaN(parsedOffset) || parsedOffset < 0))) {
+            throw new ValidationError('Parameters "limit" and "offset" must be non-negative integers');
+        }
+
+        const total = filtered.length;
+
+        let results = filtered;
+        if (parsedLimit !== undefined) {
+            results = filtered.slice(parsedOffset, parsedOffset + parsedLimit);
+        } else if (parsedOffset) {
+            results = filtered.slice(parsedOffset);
+        }
+
+        res.json({ items: results, total });
+    } catch (err) {
+        next(err);
     }
-
-    if (limit) {
-      results = results.slice(0, parseInt(limit));
-    }
-
-    res.json(results);
-  } catch (err) {
-    next(err);
-  }
 });
 
-// GET /api/items/:id
-router.get('/:id', (req, res, next) => {
-  try {
-    const data = readData();
-    const item = data.find(i => i.id === parseInt(req.params.id));
-    if (!item) {
-      const err = new Error('Item not found');
-      err.status = 404;
-      throw err;
+
+
+router.get('/:id', async (req, res, next) => {
+    try {
+        const data = await readData();
+        const id = parseInt(req.params.id, 10);
+        if (isNaN(id) || id < 0) {
+            throw new ValidationError('Invalid id parameter');
+        }
+
+        const item = data.find(i => i.id === id);
+        if (!item) {
+            throw new NotFoundError(`Item with id=${req.params.id} not found`);
+        }
+
+        res.json(item);
+    } catch (err) {
+        next(err);
     }
-    res.json(item);
-  } catch (err) {
-    next(err);
-  }
 });
 
-// POST /api/items
-router.post('/', (req, res, next) => {
-  try {
-    // TODO: Validate payload (intentional omission)
-    const item = req.body;
-    const data = readData();
-    item.id = Date.now();
-    data.push(item);
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-    res.status(201).json(item);
-  } catch (err) {
-    next(err);
-  }
+
+router.post('/', async (req, res, next) => {
+    try {
+        const item = req.body;
+        if (!item.name || typeof item.name !== 'string' || item.name.trim() === '') {
+            throw new ValidationError('The "name" field is required and must be a non-empty string.');
+        }
+
+        if (!item.category || typeof item.category !== 'string' || item.category.trim() === '') {
+            throw new ValidationError('The "category" field is required and must be a non-empty string.');
+        }
+
+        if (typeof item.price !== 'number' || isNaN(item.price) || item.price < 0) {
+            throw new ValidationError('The "price" field is required and must be a non-empty string.');
+        }
+        const data = await readData();
+        item.id = Date.now().toString();
+        data.push(item);
+
+        await writeData(data);
+
+        res.status(201).json(item);
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = router;

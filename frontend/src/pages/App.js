@@ -7,13 +7,13 @@ import { DataProvider } from '../state/DataContext';
 function App() {
   return (
     <DataProvider>
-      <nav style={{padding: 16, borderBottom: '1px solid #ddd'}}>
-        <Link to="/">Items</Link>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Items />} />
-        <Route path="/items/:id" element={<ItemDetail />} />
-      </Routes>
+        <nav style={{padding: 16, borderBottom: '1px solid #ddd'}} aria-label="Main navigation">
+            <Link to="/" style={{marginRight: 10}}>Items</Link>
+        </nav>
+        <Routes>
+            <Route path="/" element={<Items/>}/>
+            <Route path="/items/:id" element={<ItemDetail />}/>
+        </Routes>
     </DataProvider>
   );
 }

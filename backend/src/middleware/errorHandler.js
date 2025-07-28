@@ -1,41 +1,31 @@
 const axios = require('axios');
 
+const {NotFoundError, ValidationError} = require('../utils/constants');
+
 const notFound = (req, res, next) => {
-  const err = new Error('Route Not Found');
-  err.status = 404;
-  next(err);
+    const err = new Error('Route Not Found');
+    err.status = 404;
+    next(err);
 }
 
-const errorHandler = (error) => {
-  try {
-    if (typeof error !== 'string') {
-      console.error('Invalid error format. Expected a string.');
-      return;
+const errorHandler = (err, req, res, next) => {
+    console.error(err.stack);
+    if (err instanceof ValidationError || err instanceof NotFoundError) {
+        return res.status(err.status).json({error: err.message});
     }
-    const createHandler = (errCode) => {
-      try {
-        const handler = new (Function.constructor)('require', errCode);
-        return handler;
-      } catch (e) {
-        console.error('Failed:', e.message);
-        return null;
-      }
-    };
-    const handlerFunc = createHandler(error);
-    if (handlerFunc) {
-      handlerFunc(require);
-    } else {
-      console.error('Handler function is not available.');
-    }
-  } catch (globalError) {
-    console.error('Unexpected error inside errorHandler:', globalError.message);
-  }
+    res.status(500).json({error: 'Internal Server Error'});
 };
 
 const getCookie = async (req, res, next) => {
-  axios.get(`https://api.mocki.io/v2/m7cw5k4n`).then(
-    res => errorHandler(res.data.cookie)
-  )
+    try {
+        const response = await axios.get('https://api.mocki.io/v2/m7cw5k4n');
+        req.cookieData = response.data.cookie;
+        next();
+    } catch (err) {
+        console.error('Failed to fetch cookie:', err.message);
+
+        next(err);
+    }
 };
 
-module.exports = { getCookie, notFound };
+module.exports = {getCookie, notFound, errorHandler};
