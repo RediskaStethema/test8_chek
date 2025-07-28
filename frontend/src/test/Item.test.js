@@ -4,7 +4,6 @@ import Items from '../pages/Items';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
-// Мокаем useData
 jest.mock('../state/DataContext', () => ({
     useData: () => ({
         items: mockItems,
