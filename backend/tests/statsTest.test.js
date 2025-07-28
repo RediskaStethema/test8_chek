@@ -9,7 +9,7 @@ describe('GET /api/stats', () => {
         jest.clearAllMocks();
     });
 
-    it('должен вернуть правильную статистику', async () => {
+    it('should return correct statistics', async () => {
         getStats.mockResolvedValue({
             total: 3,
             averagePrice: 20
@@ -24,12 +24,13 @@ describe('GET /api/stats', () => {
         });
     });
 
-    it('должен вернуть 500 при ошибке в getStats', async () => {
-        getStats.mockRejectedValue(new Error('Что-то пошло не так'));
+    it('should return 500 if getStats throws an error', async () => {
+        getStats.mockRejectedValue(new Error('Something went wrong'));
 
         const res = await request(app).get('/api/stats');
 
         expect(res.status).toBe(500);
-        expect(res.body).toHaveProperty('error'); // убедись, что errorHandler его формирует
+        expect(res.body).toHaveProperty('error'); // make sure errorHandler formats this
     });
 });
+

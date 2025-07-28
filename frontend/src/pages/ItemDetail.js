@@ -37,7 +37,7 @@ function ItemDetail() {
             <Stack spacing={2} sx={{ p: 2 }}>
                 <Alert severity="error">{error}</Alert>
                 <Button variant="outlined" onClick={() => navigate('/')}>
-                    Назад
+                    Back
                 </Button>
             </Stack>
         );
@@ -46,9 +46,9 @@ function ItemDetail() {
     if (!item) {
         return (
             <Stack spacing={2} sx={{ p: 2 }}>
-                <Skeleton variant="text" width={200} height={40} />
-                <Skeleton variant="text" width={150} />
-                <Skeleton variant="text" width={100} />
+                <Skeleton  data-testid="skeleton" variant="text" width={200} height={40} />
+                <Skeleton data-testid="skeleton"  variant="text" width={150} />
+                <Skeleton  data-testid="skeleton"  variant="text" width={100} />
             </Stack>
         );
     }

@@ -83,17 +83,17 @@ function Items() {
                                                 <>
                                                     <Typography variant="subtitle1">ID: {item.id}</Typography>
                                                     <Typography variant="body2" sx={{ pl: 1 }}>
-                                                        Цена: {item.price !== undefined ? `$${item.price}` : 'None'}
+                                                        Price: {item.price !== undefined ? `$${item.price}` : 'None'}
                                                     </Typography>
                                                 </>
                                             ) : (
                                                 <>
                                                     <Typography variant="subtitle1">{item.name || 'No name'}</Typography>
                                                     <Typography variant="body2" sx={{ pl: 1 }}>
-                                                        Категория: {item.category}
+                                                        Category: {item.category}
                                                     </Typography>
                                                     <Typography variant="body2" sx={{ pl: 1 }}>
-                                                        Цена: {item.price !== undefined ? `$${item.price}` : 'None'}
+                                                        Price: {item.price !== undefined ? `$${item.price}` : 'None'}
                                                     </Typography>
                                                 </>
                                             )}

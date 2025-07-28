@@ -24,7 +24,7 @@ describe('Items API', () => {
 
     // === GET /api/items ===
     describe('GET /api/items', () => {
-        it('возвращает все товары', async () => {
+        it('returns all items', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items');
@@ -33,7 +33,7 @@ describe('Items API', () => {
             expect(res.body.total).toBe(mockItems.length);
         });
 
-        it('фильтрует по q', async () => {
+        it('filters items by query parameter q', async () => {
             readData.mockResolvedValue(mockItems);
             const res = await request(app).get('/api/items').query({ q: 'an' });
 
@@ -48,7 +48,7 @@ describe('Items API', () => {
             expect(res.body.total).toBe(expected.length);
         });
 
-        it('ограничивает limit', async () => {
+        it('limits results with limit parameter', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items').query({ limit: 2 });
@@ -56,7 +56,7 @@ describe('Items API', () => {
             expect(res.body.items).toEqual(mockItems.slice(0, 2));
         });
 
-        it('применяет offset', async () => {
+        it('applies offset parameter', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items').query({ offset: 2 });
@@ -64,7 +64,7 @@ describe('Items API', () => {
             expect(res.body.items).toEqual(mockItems.slice(2));
         });
 
-        it('фильтрация + offset + limit', async () => {
+        it('combines filtering, offset, and limit', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app)
@@ -79,7 +79,7 @@ describe('Items API', () => {
             expect(res.body.items).toEqual(filtered.slice(1, 3));
         });
 
-        it('ошибка: невалидный limit', async () => {
+        it('returns 400 error for invalid limit', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items?limit=-10');
@@ -87,7 +87,7 @@ describe('Items API', () => {
             expect(res.body).toHaveProperty('error');
         });
 
-        it('ошибка: невалидный offset', async () => {
+        it('returns 400 error for invalid offset', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items?offset=-1');
@@ -95,7 +95,7 @@ describe('Items API', () => {
             expect(res.body).toHaveProperty('error');
         });
 
-        it('ошибка 500 при сбое чтения', async () => {
+        it('returns 500 error if reading data fails', async () => {
             readData.mockRejectedValue(new Error('Read error'));
 
             const res = await request(app).get('/api/items');
@@ -106,7 +106,7 @@ describe('Items API', () => {
 
     // === GET /api/items/:id ===
     describe('GET /api/items/:id', () => {
-        it('возвращает товар по id', async () => {
+        it('returns item by id', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items/2');
@@ -114,13 +114,13 @@ describe('Items API', () => {
             expect(res.body).toEqual(mockItems[1]);
         });
 
-        it('ошибка 400: невалидный id', async () => {
+        it('returns 400 error for invalid id', async () => {
             const res = await request(app).get('/api/items/abc');
             expect(res.status).toBe(400);
             expect(res.body).toHaveProperty('error');
         });
 
-        it('ошибка 404: не найден', async () => {
+        it('returns 404 error if item not found', async () => {
             readData.mockResolvedValue(mockItems);
 
             const res = await request(app).get('/api/items/999');
@@ -128,7 +128,7 @@ describe('Items API', () => {
             expect(res.body).toHaveProperty('error');
         });
 
-        it('ошибка 500 при сбое чтения', async () => {
+        it('returns 500 error if reading data fails', async () => {
             readData.mockRejectedValue(new Error('Read fail'));
 
             const res = await request(app).get('/api/items/1');
@@ -139,7 +139,7 @@ describe('Items API', () => {
 
     // === POST /api/items ===
     describe('POST /api/items', () => {
-        it('создаёт новый товар при валидных данных', async () => {
+        it('creates a new item with valid data', async () => {
             readData.mockResolvedValue(mockItems);
             writeData.mockResolvedValue();
 
@@ -155,7 +155,7 @@ describe('Items API', () => {
             expect(res.body).toHaveProperty('id');
         });
 
-        it('ошибка 400: поле name отсутствует или пустое', async () => {
+        it('returns 400 error when name field is missing or empty', async () => {
             const badInputs = [{}, { name: '' }, { name: '   ' }, { name: 123 }];
 
             for (const body of badInputs) {
@@ -165,7 +165,7 @@ describe('Items API', () => {
             }
         });
 
-        it('ошибка 400: поле category отсутствует или невалидно', async () => {
+        it('returns 400 error when category field is missing or invalid', async () => {
             const invalids = [
                 { name: 'Pear', price: 20 },
                 { name: 'Pear', category: '', price: 20 },
@@ -179,7 +179,7 @@ describe('Items API', () => {
             }
         });
 
-        it('ошибка 400: поле price отсутствует или невалидно', async () => {
+        it('returns 400 error when price field is missing or invalid', async () => {
             const invalids = [
                 { name: 'Pear', category: 'Fruit' },
                 { name: 'Pear', category: 'Fruit', price: -5 },
@@ -193,7 +193,7 @@ describe('Items API', () => {
             }
         });
 
-        it('ошибка 500 при сбое записи', async () => {
+        it('returns 500 error if writing data fails', async () => {
             readData.mockResolvedValue(mockItems);
             writeData.mockRejectedValue(new Error('Write error'));
 
@@ -209,5 +209,6 @@ describe('Items API', () => {
         });
     });
 });
+
 
 
